@@ -33,15 +33,15 @@ jobs:
       - name: Prerequisites
         run: |
           rm -r ./*
-          sudo apt install ninja-build python3-venv git pkg-config libglib2.0-dev flex bison libglib2.0-dev libfdt-dev libpixman-1-dev zlib1g-dev
-          sudo apt-get install libaio-dev libbluetooth-dev libcapstone-dev libbrlapi-dev libbz2-dev libusb* \
+          sudo apt -y install ninja-build python3-venv git pkg-config libglib2.0-dev flex bison libglib2.0-dev libfdt-dev libpixman-1-dev zlib1g-dev
+          sudo apt-get -y install libaio-dev libbluetooth-dev libcapstone-dev libbrlapi-dev libbz2-dev libusb* \
                                libcap-ng-dev libcurl4-gnutls-dev libgtk-3-dev libnfs* slirp* libslirp0 libslirp-dev \
                                libibverbs-dev libjpeg8-dev libncurses5-dev libnuma-dev \
                                librbd-dev librdmacm-dev \
                                libsasl2-dev libsdl2-dev libseccomp-dev libsnappy-dev libssh-dev \
                                libvde-dev libvdeplug-dev libvte-2.91-dev libxen-dev liblzo2-dev \
                                valgrind xfslibs-dev
-          sudo apt-get install bash \
+          sudo apt-get -y install bash \
            coreutils \
            genisoimage \
            grep \
@@ -66,11 +66,12 @@ jobs:
           wget -q "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" -O appimagetool ; chmod a+x appimagetool
           sudo add-apt-repository -y ppa:flexiondotorg/quickemu
           sudo apt-get update && sudo apt-get -y install quickemu
-          wget -q https://raw.githubusercontent.com/oSoWoSo/DistroHopper/all/q ; chmod a+x q
+          mkdir -p lucas/usr/bin
+          wget -q https://raw.githubusercontent.com/oSoWoSo/DistroHopper/all/q; chmod a+x q
           sudo mkdir -p /etc/apt/keyrings
           curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg  --batch --yes --dearmor -o /etc/apt/keyrings/charm.gpg
           echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list
-          sudo apt-get update && sudo apt-get -y install gum
+          sudo apt-get -y update && sudo apt-get -y install gum
           mkdir -p lucas/usr/lib/
           mkdir -p lucas/usr/share/
           cp -r /usr/share/mime/ lucas/usr/share/
@@ -83,6 +84,7 @@ jobs:
             --enable-guest-agent \
             --enable-netmap \
             --enable-pixman \
+            --enable-png \
             --enable-smartcard \
             --enable-spice \
             --enable-spice-protocol \
@@ -101,7 +103,6 @@ jobs:
             --enable-virglrenderer \
             --enable-vmdk \
             --enable-vnc \
-            --enable-vnc-png \
             --enable-vnc-jpeg \
             --enable-vnc-sasl \
             --enable-vpc \
@@ -114,6 +115,7 @@ jobs:
           make
           make install
           cd ..
+          cp q lucas/usr/bin/
           cp q.desktop q_logo_no_text.svg AppRun libunionpreload.so lucas/
 
       # Runs a set of commands using the runners shell
