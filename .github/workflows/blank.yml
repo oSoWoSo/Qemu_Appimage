@@ -43,7 +43,7 @@ jobs:
                                valgrind xfslibs-dev
           sudo apt-get -y install bash \
            coreutils \
-           fuse3 \
+           fuse \
            genisoimage \
            grep \
            jq \
