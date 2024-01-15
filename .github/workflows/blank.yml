@@ -43,6 +43,7 @@ jobs:
                                valgrind xfslibs-dev
           sudo apt-get -y install bash \
            coreutils \
+           fuse3 \
            genisoimage \
            grep \
            jq \
@@ -67,7 +68,6 @@ jobs:
           sudo add-apt-repository -y ppa:flexiondotorg/quickemu
           sudo apt-get update && sudo apt-get -y install quickemu
           mkdir -p lucas/usr/bin
-          wget -q https://raw.githubusercontent.com/oSoWoSo/DistroHopper/all/q; chmod a+x q
           sudo mkdir -p /etc/apt/keyrings
           curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg  --batch --yes --dearmor -o /etc/apt/keyrings/charm.gpg
           echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list
@@ -115,12 +115,14 @@ jobs:
           make
           make install
           cd ..
-          cp q lucas/usr/bin/
+          wget -q https://raw.githubusercontent.com/oSoWoSo/DistroHopper/all/q; chmod a+x q
+          chmod a+x q && mkdir -p lucas/usr/bin && cp q lucas/usr/bin/
           cp q.desktop q_logo_no_text.svg AppRun libunionpreload.so lucas/
 
       # Runs a set of commands using the runners shell
       - name: Build appimage
         run: |
+        
           ./linuxdeploy --appdir lucas/
           cp q.desktop lucas/
           ARCH=x86_64 ./appimagetool -n lucas/
