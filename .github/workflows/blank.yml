@@ -2,21 +2,25 @@
 
 name: compiled CI
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Build at 00:00 on every 12th day-of-month.
   schedule:
     - cron: "0 0 */6 * *"
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ main ]
+    #branches: [ main,q ]
     paths-ignore: [ '**/README.md' ]
   pull_request:
-    branches: [ main ]
+    #branches: [ main,q ]
     paths-ignore: [ '**/README.md' ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -30,17 +34,27 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: /var/cache/apt
+          key: ${{ runner.os }}-apt-${{ hashFiles('**/apt-lock.txt') }}
+
       - name: Prerequisites
         run: |
           echo $PATH
           sudo apt-get update && sudo apt-get upgrade -y
-          sudo apt-get install desktop-file-utils \
+          sudo apt-get install \
            bison \
+           desktop-file-utils
            docutils-common \
            flex \
+           genisoimage \
            gettext \
            git \
            gnutls-bin \
+           grep \
+           jq \
            libaio-dev \
            libbluetooth-dev \
            libbrlapi-dev \
@@ -83,22 +97,34 @@ jobs:
            libvirglrenderer1 \
            libvte-2.91-dev \
            libxen-dev \
+           libxkbcommon-dev \
            libxml2-dev \
            libxml2-utils \
            libyajl-dev \
            libyajl2 \
            libzstd-dev \
            libzstd1 \
+           lsb-base \
            ninja-build \
+           ovmf \
            pip \
            pkg-config \
+           procps \
            python3-venv \
+           sed \
            slirp* \
+           spice-client-gtk \
+           tss2 \
+           unzip \
+           usbutils \
            valgrind \
            virgl-server \
+           wget \
+           xdg-user-dirs \
            xfslibs-dev \
            xsltproc \
-           zlib1g-dev
+           zlib1g-dev \
+           zsync
           wget -q "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage" -O linuxdeploy ; chmod a+x linuxdeploy
           wget -q "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage" -O appimagetool ; chmod a+x appimagetool
           sudo pip3 install meson
@@ -108,6 +134,11 @@ jobs:
           meson setup _build
           meson compile -C _build
           sudo meson install -C _build
+          wget -q https://raw.githubusercontent.com/oSoWoSo/DistroHopper/all/q ; chmod a+x q
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg  --batch --yes --dearmor -o /etc/apt/keyrings/charm.gpg
+          echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list
+          sudo apt-get update && sudo apt-get -y install gum
           mkdir -p lucas/usr/lib/
           mkdir -p lucas/usr/share/
           cp -r /usr/share/mime/ lucas/usr/share/
@@ -117,6 +148,7 @@ jobs:
           git submodule update --recursive
           ./configure --disable-docs \
            --enable-alsa \
+           --enable-brlapi \
            --enable-gio \
            --enable-gnutls \
            --enable-gtk \
@@ -127,6 +159,7 @@ jobs:
            --enable-libudev \
            --enable-libusb \
            --enable-modules \
+           --enable-netmap \
            --enable-nettle \
            --enable-opengl \
            --enable-pa \
@@ -134,24 +167,58 @@ jobs:
            --enable-sdl \
            --enable-slirp \
            --enable-slirp-smbd \
+           --enable-smartcard \
            --enable-spice \
            --enable-spice-protocol \
            --enable-system \
+           --enable-tpm \
+           --enable-usb-redir \
            --enable-user \
+           --enable-vde \
+           --enable-vdi \
+           --enable-vduse-blk-export \
+           --enable-vhdx \
+           --enable-vhost-crypto \
+           --enable-vhost-kernel \
+           --enable-vhost-net \
+           --enable-vhost-user \
+           --enable-vhost-user-blk-server \
+           --enable-vhost-vdpa \
            --enable-virglrenderer \
+           --enable-vmdk \
+           --enable-vnc \
+           --enable-vnc-jpeg \
+           --enable-vnc-sasl \
+           --enable-vpc \
+           --enable-vte \
+           --enable-vvfat \
+           --enable-xen \
+           --enable-xen-pci-passthrough \
+           --enable-zstd \
            --prefix=${GITHUB_WORKSPACE}/lucas/usr/
           make
           make install
+          sudo apt-get -y install cpu-checker \
+           ipxe-qemu \
+           ipxe-qemu-256k-compat-efi-roms \
+           mesa-utils \
+           msr-tools \
+           seabios \
+           socat \
+           x11-xserver-utils
+          wget -q https://raw.githubusercontent.com/quickemu-project/quickemu/master/quickget && chmod a+x quickget
+          wget -q https://raw.githubusercontent.com/quickemu-project/quickemu/master/quickemu && chmod a+x quickemu
+          wget -q https://raw.githubusercontent.com/quickemu-project/quickemu/master/quickreport && chmod a+x quickreport
+          wget -q https://raw.githubusercontent.com/quickemu-project/quickemu/master/chunkcheck && chmod a+x chunkcheck
           cd ${GITHUB_WORKSPACE}
           find -iname 'AppRun' | xargs -i -t -exec cp {} /home/runner/work/Qemu_Appimage/Qemu_Appimage/lucas/
-          find -iname 'qemu.desktop' | xargs -i -t -exec cp {} /home/runner/work/Qemu_Appimage/Qemu_Appimage/lucas/
-          find -iname 'qemu_logo_no_text.svg' | xargs -i -t -exec cp {} /home/runner/work/Qemu_Appimage/Qemu_Appimage/lucas/
+          find -iname 'q.desktop' | xargs -i -t -exec cp {} /home/runner/work/Qemu_Appimage/Qemu_Appimage/lucas/
+          find -iname 'q_logo_no_text.svg' | xargs -i -t -exec cp {} /home/runner/work/Qemu_Appimage/Qemu_Appimage/lucas/
           find -iname 'libunionpreload.so' | xargs -i -t -exec cp {} /home/runner/work/Qemu_Appimage/Qemu_Appimage/lucas/
 
       # Runs a set of commands using the runners shell
       - name: Build appimage
         run: |
-          
           find -name 'linuxdeploy**' -type f -exec {} --appdir ${GITHUB_WORKSPACE}/lucas/ \;
           cd ${GITHUB_WORKSPACE} && cp qemu.desktop lucas/ && find lucas/ -depth -iname 'libglib-2.0.so.0' -type f -delete
           find ${GITHUB_WORKSPACE}/lucas/usr/bin/ -type f | xargs strip
@@ -159,7 +226,7 @@ jobs:
           ARCH=x86_64 VERSION=git find -name 'appimagetool**' -type f -exec {} ${GITHUB_WORKSPACE}/lucas/ \;
 
       - name: release
-        uses: "marvinpinto/action-automatic-releases@6273874b61ebc8c71f1a61b2d98e234cf389b303"
+        uses: "marvinpinto/action-automatic-releases@latest"
         with:
           title: Continuous build
           automatic_release_tag: continuous-stable
@@ -167,3 +234,4 @@ jobs:
           draft: false
           files: /home/runner/work/Qemu_Appimage/Qemu_Appimage/*.AppImage*
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
+
