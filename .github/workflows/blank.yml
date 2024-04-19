@@ -35,17 +35,6 @@ jobs:
       - uses: actions/checkout@v3
       - name: Prerequisites
         run: |
-#<<<<<<< HEAD
-#          sudo apt update && sudo apt upgrade -y
-#          sudo apt install ninja-build python3-venv git pkg-config libglib2.0-dev flex bison git libglib2.0-dev libfdt-dev libpixman-1-dev zlib1g-dev libspice-protocol-dev
-#          sudo apt-get install libaio-dev libbluetooth-dev libcapstone-dev libbrlapi-dev libbz2-dev libusb* libspice-server1 libspice-server-dev
-#          sudo apt-get install libcap-ng-dev libcurl4-gnutls-dev libgtk-3-dev libnfs* slirp* libslirp0 libslirp-dev
-#          sudo apt-get install libibverbs-dev libjpeg8-dev libncurses5-dev libnuma-dev libvirglrenderer-dev libvirglrenderer1 virgl-server libiscsi7 libiscsi-dev libzstd1 libzstd-dev
-#          sudo apt-get install librbd-dev librdmacm-dev
-#          sudo apt-get install libsasl2-dev libsdl2-dev libseccomp-dev libsnappy-dev libssh-dev
-#          sudo apt-get install libvde-dev libvdeplug-dev libvte-2.91-dev libxen-dev liblzo2-dev
-#          sudo apt-get install valgrind xfslibs-dev libpixman-1-0 libpixman-1-dev
-#=======
           sudo apt -y install python3-venv git ninja-build pkg-config libglib2.0-dev flex bison libglib2.0-dev libfdt-dev libpixman-1-dev zlib1g-dev
           sudo apt-get -y install \
            bash \
@@ -110,7 +99,6 @@ jobs:
            xfslibs-dev \
            zsync
            # linuxdeploy & appimagetool
-#>>>>>>> 0bb0d9a (q test)
           wget -q "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage" -O linuxdeploy ; chmod a+x linuxdeploy
           wget -q "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" -O appimagetool ; chmod a+x appimagetool
           # quickemu
@@ -125,21 +113,16 @@ jobs:
           sudo apt-get update && sudo apt-get -y install gum
           # needed directories
           mkdir -p lucas/usr/lib/
-#<<<<<<< HEAD
-#          mkdir -p lucas/usr/share/
-#          cp -r /usr/share/mime/ lucas/usr/share/
-#=======
           #mkdir -p lucas/usr/share/
           #cp -r /usr/share/mime/ lucas/usr/share/
           # qemu
-#>>>>>>> 0bb0d9a (q test)
           git clone https://gitlab.com/qemu-project/qemu.git
           cd qemu
           git submodule init
           git submodule update --recursive
-#<<<<<<< HEAD
-          ./configure --disable-docs --enable-modules --enable-system --enable-virglrenderer --enable-guest-agent --enable-gio --enable-sdl --enable-gtk --enable-gtk-clipboard --enable-spice --enable-spice-protocol --enable-pixman --enable-user --enable-opengl --enable-kvm --enable-gnutls --enable-libssh --enable-libusb --enable-libudev --enable-nettle --enable-alsa --enable-pa --enable-slirp --enable-slirp-smbd --prefix=${GITHUB_WORKSPACE}/lucas/usr/
-#=======
+          #<<<<<<< HEAD
+          #./configure --disable-docs --enable-modules --enable-system --enable-virglrenderer --enable-guest-agent --enable-gio --enable-sdl --enable-gtk --enable-gtk-clipboard --enable-spice --enable-spice-protocol --enable-pixman --enable-user --enable-opengl --enable-kvm --enable-gnutls --enable-libssh --enable-libusb --enable-libudev --enable-nettle --enable-alsa --enable-pa --enable-slirp --enable-slirp-smbd --prefix=${GITHUB_WORKSPACE}/lucas/usr/
+          #=======
           ./configure \
            --disable-docs \
            --enable-alsa \
@@ -194,7 +177,6 @@ jobs:
            --enable-xen-pci-passthrough \
            --enable-zstd \
            --target-list=x86_64-linux-user --prefix=${GITHUB_WORKSPACE}/lucas/usr/
-#>>>>>>> 0bb0d9a (q test)
           make
           make install
           cd ..
