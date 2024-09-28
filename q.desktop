@@ -1,7 +1,7 @@
 [Desktop Entry]
-Name=QEMU
-Exec=qemu-system-x86_64
+Name=q
+Exec=q
 Terminal=true
 Type=Application
-Icon=qemu_logo_no_text
+Icon=q_logo_no_text
 Categories=System;Emulator;
