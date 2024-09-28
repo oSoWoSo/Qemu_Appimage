@@ -32,7 +32,14 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: /var/cache/apt
+          key: ${{ runner.os }}-apt-${{ hashFiles('**/apt-lock.txt') }}
 
       - name: Prerequisites
         run: |
@@ -124,10 +131,12 @@ jobs:
            xsltproc \
            zlib1g-dev \
            zsync
-           # linuxdeploy & appimagetool
+      - name: linuxdeploy & appimagetool
+        run: |
           wget -q "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage" -O linuxdeploy ; chmod a+x linuxdeploy
           wget -q "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" -O appimagetool ; chmod a+x appimagetool
-          # meson
+      - name: meson
+        run: |
           sudo pip3 install meson
           wget -c -q "https://download.gnome.org/sources/glib/2.80/glib-2.80.2.tar.xz"
           tar -xf glib-2.80.2.tar.xz
@@ -135,12 +144,15 @@ jobs:
           meson setup _build
           meson compile -C _build
           sudo meson install -C _build
-          # quickemu
+      - name: quickemu
+        run: |
           sudo add-apt-repository -y ppa:flexiondotorg/quickemu
           sudo apt-get update && sudo apt-get -y install quickemu
-          # q
+      - name: q
+        run: |
           wget -q https://raw.githubusercontent.com/oSoWoSo/DistroHopper/all/q ; chmod a+x q
-          # gum
+      - name: gum
+        run: |
           sudo mkdir -p /etc/apt/keyrings
           curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg  --batch --yes --dearmor -o /etc/apt/keyrings/charm.gpg
           echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list
@@ -149,7 +161,8 @@ jobs:
           mkdir -p lucas/usr/lib/
           mkdir -p lucas/usr/share/
           cp -r /usr/share/mime/ lucas/usr/share/
-          # qemu
+      - name: qemu
+        run: |
           git clone https://gitlab.com/qemu-project/qemu.git
           cd qemu
           git submodule init
@@ -216,7 +229,6 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Build appimage
         run: |
-          
           find -name 'linuxdeploy**' -type f -exec {} --appdir ${GITHUB_WORKSPACE}/lucas/ \;
           cd ${GITHUB_WORKSPACE} && cp qemu.desktop lucas/ && find lucas/ -depth -iname 'libglib-2.0.so.0' -type f -delete
           ARCH=x86_64 find -name 'appimagetool**' -type f -exec {} ${GITHUB_WORKSPACE}/lucas/ \;
