@@ -258,7 +258,7 @@ jobs:
           #swtpm-libs
           #x11-xserver-utils
           #
-          sudo apt -y install cpu-checker \
+          sudo apt-get -y install cpu-checker \
            ipxe-qemu \
            ipxe-qemu-256k-compat-efi-roms \
            libpmem \
