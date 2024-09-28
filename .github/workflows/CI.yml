@@ -261,15 +261,13 @@ jobs:
           sudo apt -y install cpu-checker \
            ipxe-qemu \
            ipxe-qemu-256k-compat-efi-roms \
-           libpmem1 \
-           libtpms0 \
-           liburing1 \
+           libpmem \
+           liburing \
            mesa-utils \
            msr-tools \
            seabios \
            socat \
            swtpm \
-           swtpm-libs \
            x11-xserver-utils
           wget -q https://raw.githubusercontent.com/quickemu-project/quickemu/master/quickget && chmod a+x quickget
           wget -q https://raw.githubusercontent.com/quickemu-project/quickemu/master/quickemu && chmod a+x quickemu
