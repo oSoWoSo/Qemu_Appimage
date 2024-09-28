@@ -185,7 +185,7 @@ jobs:
            --target-list=x86_64-linux-user --prefix=${GITHUB_WORKSPACE}/lucas/usr/
           make
           make install
-          cd ..
+          cd ${GITHUB_WORKSPACE}
           ls
           pwd
           cp q.desktop q_logo_no_text.svg AppRun libunionpreload.so lucas/
